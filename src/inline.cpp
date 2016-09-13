@@ -103,6 +103,8 @@ void MapFunctionRewriter::visit(const FieldWrite *op) {
     Expr index = IRRewriter::rewrite(op->elementOrSet);
     stmt = TensorWrite::make(setFieldRead, {index}, rewrite(op->value));
   }
+  // TODO: Allow writing a field from a set-read element (e.g. in apply)?
+  //else if (isa<SetRead>(op->elementOrSet) ...) {}
   else {
     // TODO: Handle the case where the target var was reassigned
     //       tmp = s; ... = tmp.a;

@@ -663,7 +663,7 @@ fir::PrintStmt::Ptr Parser::parsePrintStmt() {
 }
 
 // apply_stmt: apply ident ['<' endpoints '>'] ['(' [expr_params] ')'] 
-//             'to' set_index_set ';'
+//             'to' set_index_set ['through' set_index_set] ';'
 fir::ApplyStmt::Ptr Parser::parseApplyStmt() {
   try {
     auto applyStmt = std::make_shared<fir::ApplyStmt>();
@@ -688,6 +688,12 @@ fir::ApplyStmt::Ptr Parser::parseApplyStmt() {
     
     consume(Token::Type::TO);
     applyStmt->map->target = parseSetIndexSet();
+
+    fir::SetIndexSet::Ptr through;
+    if (tryconsume(Token::Type::THROUGH)) {
+      through = parseSetIndexSet();
+    }
+    applyStmt->map->through = through;
     
     const Token endToken = consume(Token::Type::SEMICOL);
     applyStmt->setEndLoc(endToken);

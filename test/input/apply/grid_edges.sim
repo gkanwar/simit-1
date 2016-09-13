@@ -1,0 +1,18 @@
+element Vertex
+  val : float;
+end
+
+element Edge
+end
+
+extern V : set{Vertex};
+extern E : grid[2]{Edge}(V);
+
+func f(inout v : Vertex, E : grid[2]{Edge}(V))
+  v.val = 0.2*(V[1,0].val + V[-1,0].val +
+               V[0,1].val + V[0,-1].val + V[0,0].val);
+end
+
+export func main()
+  apply f to V through E;
+end

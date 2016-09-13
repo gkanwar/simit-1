@@ -52,6 +52,33 @@ class NormalizeRowIndices : public IRRewriter {
     expr = SetRead::make(op->set, newInds);
   }
 
+  void visit(const FieldWrite *op) {
+    Expr elementOrSet = op->elementOrSet;;
+    if (isa<VarExpr>(elementOrSet) &&
+        to<VarExpr>(elementOrSet)->var == origin) {
+      vector<Expr> zeros;
+      for (int i = 0; i < dims; ++i) {
+        zeros.push_back(Literal::make(0));
+      }
+      elementOrSet = SetRead::make(pointSet, zeros);
+    }
+
+    iassert(isa<SetRead>(elementOrSet));
+    const SetRead *rowRead= to<SetRead>(elementOrSet);
+    vector<int> rowIndices = getLitInds(rowRead);
+
+    iassert(rowNormOff.size() == 0);
+    // Negate row indices for offset in this statement
+    for (int rind : rowIndices) {
+      rowNormOff.push_back(-rind);
+    }
+
+    // Replace elementOrSet and rewrite the whole statement
+    Expr value = rewrite(op->value);
+    stmt = FieldWrite::make(elementOrSet, op->fieldName, value, op->cop);
+    rowNormOff.clear();
+  }
+
   void visit(const TensorWrite *op) {
     // Must assume tensor write to output is always a var expr, otherwise we
     // require more complex code analysis

@@ -29,6 +29,34 @@ TEST(apply, vertices) {
   ASSERT_EQ(6.0, (int)a.get(v2));
 }
 
+TEST(apply, grid_edges) {
+  Set V;
+  FieldRef<simit_float> val = V.addField<simit_float>("val");
+
+  Set E(V,{2,2});
+  
+  ElementRef v00 = E.getGridPoint({0,0});
+  ElementRef v01 = E.getGridPoint({0,1});
+  ElementRef v10 = E.getGridPoint({1,0});
+  ElementRef v11 = E.getGridPoint({1,1});
+
+  val.set(v00, 1.0);
+  val.set(v01, 2.0);
+  val.set(v10, 3.0);
+  val.set(v11, 4.0);
+
+  Function func = loadFunction(TEST_FILE_NAME, "main");
+  if (!func.defined()) FAIL();
+  func.bind("V", &V);
+  func.bind("E", &E);
+  func.runSafe();
+
+  ASSERT_EQ(2.2, (simit_float)val.get(v00));
+  ASSERT_EQ(2.4, (simit_float)val.get(v01));
+  ASSERT_EQ(2.6, (simit_float)val.get(v10));
+  ASSERT_EQ(2.8, (simit_float)val.get(v11));
+}
+
 TEST(apply, edges_no_endpoints) {
   Set V;
   ElementRef v0 = V.add();
